@@ -5,7 +5,8 @@ Created on Sep 17, 2016
 '''
 import xml.etree.ElementTree as ET
 import pprint
-
+import uatMethods
+from openpyxl.styles import Alignment, Color
 
 #===============================================================================
 # This function creates the Summary sheet. This sheet gives a summary of the 
@@ -56,7 +57,10 @@ def CreateSummarySheet(wb_w, Sheet_name, uat_data, xml_data,ReportFilePath):
     Summary_sheet.cell(row = xr+3, column = xc).value = 'Total No Of TestCases'
     Summary_sheet.cell(row = xr+3, column = xc+1).value = nTotalNoOfTcs
     
-
+    uatMethods.setColumnWidth(Summary_sheet)
+    '''if nNoOfTCsFailed !=0:
+        Summary_sheet.cell(row = xr+1, column = xc+1) = color()
+        '''
     wb_w.save(ReportFilePath)
 
 
@@ -64,10 +68,13 @@ def CreateSummarySheet(wb_w, Sheet_name, uat_data, xml_data,ReportFilePath):
 # This function creates Report Sheet. This sheet lists all the Test Cases in
 # the TestStand Report Files.
 #===============================================================================
-def CreateReportSheet(wb_w, Sheet_name, data, ReportFilePath):
+def CreateReportSheet(wb_r, wb_w, Sheet_name, data, ReportFilePath):
       
     Report_sheet = wb_w.get_sheet_by_name(Sheet_name)
     
+    names = uatMethods.SheetNamesbyTCnames(wb_r)
+    
+    wr_column_name = True
     prev_sheet_no = 1 # should be init at runtime
     curr_sheet_no = 0
     r = 3
@@ -75,15 +82,30 @@ def CreateReportSheet(wb_w, Sheet_name, data, ReportFilePath):
     
     for i,j in sorted(data.items()): #Does it sort by name..???
         tc_name = str(i)
+        sh_name_key, middle, last = tc_name.partition('_')
+        sh_name_value = names[sh_name_key]
+        
+        #print(sh_name_key + ' ' +  names[sh_name_key])
+                        
         curr_sheet_no = int(tc_name[2:5])   
         if (curr_sheet_no != prev_sheet_no):
             c +=3
             r = 3
+            wr_column_name = True
             prev_sheet_no =  curr_sheet_no
+
+        if wr_column_name == True:
+            Report_sheet.cell(row = r-1, column = c).value = str(sh_name_value)
+            Report_sheet.merge_cells(start_row=r-1, start_column=c, end_row=r-1, end_column=c+1)
+            Report_sheet.cell(row=r-1, column=c).alignment = Alignment(horizontal = 'center')
+            wr_column_name = False
+        Report_sheet.cell(row = r, column=c).alignment = Alignment(horizontal = 'center')
         Report_sheet.cell(row = r, column = c).value = i
         Report_sheet.cell(row = r, column = c+1).value = j
         r +=1
-         
+    
+    uatMethods.setColumnWidth(Report_sheet) 
+    
     wb_w.save(ReportFilePath)    
 
 #=======================================================================
@@ -107,38 +129,67 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
                 del not_list[j]
                 len_not_list -=1
                 break
-                   
+
+    Sheet.column_dimensions['B'].width  = 22                  
+    Sheet.column_dimensions['C'].width  = 22
+    Sheet.column_dimensions['D'].width  = 22
+    
+    Sheet.cell(row = 2, column = 2).value = "TCs in TestStand Report"
+    Sheet.cell(row = 2, column = 3).value = "TCs not automated"
+    Sheet.cell(row = 2, column = 5).value = "TCs in the UAT"
     
     for num in range(0, len(not_list)):
+        Sheet.cell(row = num+2, column = 2).alignment = Alignment(horizontal = 'center')
         Sheet.cell(row = num+3, column = 2).value = not_list[num]
     for num in range(0, len(xml_data)):
+        Sheet.cell(row = num+2, column = 3).alignment = Alignment(horizontal = 'center')
         Sheet.cell(row = num+3, column = 3).value = xml_data.keys()[num]
     for num in range(0, len(uat_data)):
-        Sheet.cell(row = num+3, column = 4).value = uat_data.keys()[num] 
+        Sheet.cell(row = num+2, column = 5).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 5).value = uat_data.keys()[num] 
         
     #print(len(tc_list))
     #pprint.pprint(tc_list)
+    
+    uatMethods.setColumnWidth(Sheet)
     wb_w.save(ReportFilePath)
 
 
+
+#===============================================================================
+# Take dicts of infividual xml files and merhe them into 1 mega dict
+#===============================================================================
 def mergeDictsIntoOne(master_dict, new_dict):
-    
-    for new_key, new_value in new_dict.items():
-        for master_key, master_value in master_dict.items():
-            if new_key == master_key:
-                if master_value == 'Failed':
-                    # It has been marked Failed in master dict,
-                    # Update it only if the status has changed to Passed
-                    if new_value == 'Passed':
-                        master_value = new_value
-                elif master_value == 'Skipped':
-                    # It has been marked Skipped in the master dict, 
-                    # Update it only if the new status is either Passed or Failed
-                    if new_value != 'Skipped':
-                        master_value = new_value
+    key_found = False
+    if len(master_dict) == 0:
+        master_dict = new_dict
+    else:
+        for new_key, new_value in new_dict.items():
+            for master_key, master_value in master_dict.items():
+                if new_key == master_key:
+                    if master_value == 'Failed':
+                        # It has been marked Failed in master dict,
+                        # Update it only if the status has changed to Passed
+                        if new_value == 'Passed':
+                            master_value = new_value
+                            key_found = True
+                            break
+                    elif master_value == 'Skipped':
+                        # It has been marked Skipped in the master dict, 
+                        # Update it only if the new status is either Passed or Failed
+                        if new_value != 'Skipped':
+                            master_value = new_value
+                            key_found = True
+                            break
+ 
+            if (key_found == False):
+                master_dict.setdefault(new_key, new_value)
+            elif(key_found == True):
+                master_dict[master_key] = master_value
                     
-                    
-        
+    #print(len(master_dict))                    
+    return master_dict                
+   
                 
                 
     

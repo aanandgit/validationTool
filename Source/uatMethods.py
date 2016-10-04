@@ -4,7 +4,7 @@ Created on Sep 10, 2016
 @author: Hankock
 '''
 from openpyxl.styles import Font, Alignment
-
+import pprint
 def CreateSummarySheetFromData(wb_read, wb_write, Data, file_name):
    
     Sheet_write = wb_write.get_sheet_by_name('Summary')
@@ -70,6 +70,48 @@ def CreateReportSheetFromData(wb_read, wb_write, Data, file_name):
     # print(Sheet_write.cell(row = i, column = 2).value + ' ' + Sheet_write.cell(row = i, column = 3).value)
 
     wb_write.save(file_name)
+
+def SheetNamesbyTCnames(Workbook):
+    List_of_Sheets = Workbook.get_sheet_names()
+    Num_of_sheets  = len(List_of_Sheets)
+    #print(List_of_Sheets)
+    #print(Num_of_sheets)
+    Sheet_data = {}
+    Workbook_data = {}
+    
+    for i in range(1, Num_of_sheets):
+        Sheet_data = SheetNameofTC(Workbook, List_of_Sheets[i])
+        #Workbook_data.setdefault(Sheet_data.keys()[0], Sheet_data.values()[0])
+        Workbook_data.update(Sheet_data)
+        #print(str(Sheet_data.keys()) + ' ' + str(Sheet_data.values()))
+    
+    #pprint.pprint(Workbook_data)    
+    return Workbook_data
+    
+def SheetNameofTC(Workbook, Sheet):
+    Index = GetDataIndex(Workbook, Sheet, 'TestCase Name')
+    column_num = Index.values()[0]
+    Sheet_data = {}
+    s_name = []
+    flag = True
+    
+    Sheet_obj = Workbook.get_sheet_by_name(Sheet)    
+    for i in range(1, (Sheet_obj.max_row+1)):
+        row_value = str(Sheet_obj.cell(row=i, column=column_num).value)
+        if (row_value.startswith('TC') == True):
+            first, middle, last = row_value.partition('_')   
+            s_name.append(first)
+  
+      
+    for i in range(0, len(s_name)):
+        if (s_name[0] != s_name[i]):
+            flag = False
+    
+    if flag != False and len(s_name) != 0:
+        Sheet_data.setdefault(s_name[0],Sheet)    
+        
+  
+    return Sheet_data
     
 def TestCasesInWorkbook(Workbook):
     List_of_sheets = Workbook.get_sheet_names()
@@ -80,6 +122,7 @@ def TestCasesInWorkbook(Workbook):
     
     for i in range(1, Num_of_sheets):
         Sheet_data = TestCasesInSheet(Workbook, List_of_sheets[i])
+        #print(str(List_of_sheets[i]) + ' ' + str(len(Sheet_data)))
         for j in range(0, len(Sheet_data)):
             Data_TCs.setdefault(Sheet_data.keys()[j], Sheet_data.values()[j])
         
@@ -140,3 +183,15 @@ def GetDataIndex(Workbook, Sheet, data):
     Index.setdefault(i, j)  # should be integer value only
        
     return Index
+
+#===============================================================================
+# This function sets the column width
+#===============================================================================
+def setColumnWidth(ws):
+    dims = {}
+    for row in ws.rows:
+        for cell in row:
+            if cell.value:
+                dims[cell.column] = max((dims.get(cell.column, 0), len(str(cell.value))))
+    for col, value in dims.items():
+        ws.column_dimensions[col].width = value + 1
