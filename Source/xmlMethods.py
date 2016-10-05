@@ -131,22 +131,22 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
                 break
 
     Sheet.column_dimensions['B'].width  = 22                  
-    Sheet.column_dimensions['C'].width  = 22
     Sheet.column_dimensions['D'].width  = 22
+    Sheet.column_dimensions['F'].width  = 22
     
-    Sheet.cell(row = 2, column = 2).value = "TCs in TestStand Report"
-    Sheet.cell(row = 2, column = 3).value = "TCs not automated"
-    Sheet.cell(row = 2, column = 5).value = "TCs in the UAT"
+    Sheet.cell(row = 2, column = 2).value = "TCs not automated"
+    Sheet.cell(row = 2, column = 4).value = "TCs in TestStand Reports"
+    Sheet.cell(row = 2, column = 6).value = "TCs in the UAT"
     
     for num in range(0, len(not_list)):
         Sheet.cell(row = num+2, column = 2).alignment = Alignment(horizontal = 'center')
         Sheet.cell(row = num+3, column = 2).value = not_list[num]
     for num in range(0, len(xml_data)):
-        Sheet.cell(row = num+2, column = 3).alignment = Alignment(horizontal = 'center')
-        Sheet.cell(row = num+3, column = 3).value = xml_data.keys()[num]
+        Sheet.cell(row = num+2, column = 4).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 4).value = xml_data.keys()[num]
     for num in range(0, len(uat_data)):
-        Sheet.cell(row = num+2, column = 5).alignment = Alignment(horizontal = 'center')
-        Sheet.cell(row = num+3, column = 5).value = uat_data.keys()[num] 
+        Sheet.cell(row = num+2, column = 6).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 6).value = uat_data.keys()[num] 
         
     #print(len(tc_list))
     #pprint.pprint(tc_list)
