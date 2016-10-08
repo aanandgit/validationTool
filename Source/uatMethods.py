@@ -115,12 +115,15 @@ def SheetNameofTC(Workbook, Sheet):
     
 def TestCasesInWorkbook(Workbook):
     List_of_sheets = Workbook.get_sheet_names()
+    #pprint.pprint(List_of_sheets)
     Num_of_sheets = len(List_of_sheets)
+    #print(Num_of_sheets)
     
     Sheet_data = {}
     Data_TCs = {}
     
-    for i in range(1, Num_of_sheets):
+    for i in range(2, Num_of_sheets-1):#Skip the last sheet - Revision History
+        #pprint.pprint(List_of_sheets[i])
         Sheet_data = TestCasesInSheet(Workbook, List_of_sheets[i])
         #print(str(List_of_sheets[i]) + ' ' + str(len(Sheet_data)))
         for j in range(0, len(Sheet_data)):

@@ -80,7 +80,7 @@ def CreateReportSheet(wb_r, wb_w, Sheet_name, data, ReportFilePath):
     r = 3
     c = 2
     
-    for i,j in sorted(data.items()): #Does it sort by name..???
+    for i,j in sorted(data.items()): 
         tc_name = str(i)
         sh_name_key, middle, last = tc_name.partition('_')
         sh_name_value = names[sh_name_key]
