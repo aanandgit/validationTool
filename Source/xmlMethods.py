@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import pprint
 import uatMethods
 from openpyxl.styles import Alignment, Color
+from openpyxl.styles.fills import PatternFill
 
 #===============================================================================
 # This function creates the Summary sheet. This sheet gives a summary of the 
@@ -57,10 +58,25 @@ def CreateSummarySheet(wb_w, Sheet_name, uat_data, xml_data,ReportFilePath):
     Summary_sheet.cell(row = xr+3, column = xc).value = 'Total No Of TestCases'
     Summary_sheet.cell(row = xr+3, column = xc+1).value = nTotalNoOfTcs
     
+    
+    ## Highlight cells of the there are any Skipped or Failed TCs
+    if nNoOfTCsFailed != 0:
+        Summary_sheet.cell(row = xr+1, column = xc).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FF0000'))
+        Summary_sheet.cell(row = xr+1, column = xc+1).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FF0000'))
+        
+    if nNoOfTCsSkiped != 0:
+        Summary_sheet.cell(row = xr+2, column = xc).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FFFF00'))
+        Summary_sheet.cell(row = xr+2, column = xc+1).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FFFF00'))
+    
     uatMethods.setColumnWidth(Summary_sheet)
-    '''if nNoOfTCsFailed !=0:
-        Summary_sheet.cell(row = xr+1, column = xc+1) = color()
-        '''
     wb_w.save(ReportFilePath)
 
 
@@ -102,6 +118,22 @@ def CreateReportSheet(wb_r, wb_w, Sheet_name, data, ReportFilePath):
         Report_sheet.cell(row = r, column=c).alignment = Alignment(horizontal = 'center')
         Report_sheet.cell(row = r, column = c).value = i
         Report_sheet.cell(row = r, column = c+1).value = j
+        if j == 'Skipped':
+            Report_sheet.cell(row = r, column = c).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FFFF00'))
+            Report_sheet.cell(row = r, column = c+1).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FFFF00'))
+
+        if j == 'Failed':
+            Report_sheet.cell(row = r, column = c).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FF0000'))
+            Report_sheet.cell(row = r, column = c+1).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('FF0000'))
+
         r +=1
     
     uatMethods.setColumnWidth(Report_sheet) 
@@ -117,11 +149,12 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
     
     Sheet = wb_w.get_sheet_by_name(Sheet_name)
     
-    xml_list = xml_data.keys()
-    not_list = uat_data.keys()
+    xml_list = sorted(xml_data.keys())
+    not_list = sorted(uat_data.keys())
     len_not_list = len(not_list)
     len_xml_list = len(xml_list)
-    
+    uat_list = sorted(uat_data.keys())
+    len_uat_list = len(uat_list)
     
     for i in range(0, len_xml_list):
         for j in range(0, len_not_list):
@@ -130,24 +163,44 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
                 len_not_list -=1
                 break
 
+    not_list = sorted(not_list)
+    '''
+    total_list = xml_list + not_list
+    len_total_list = len(total_list)
+    '''
+    Sheet.freeze_panes = 'A2'        
+
     Sheet.column_dimensions['B'].width  = 22                  
     Sheet.column_dimensions['D'].width  = 22
     Sheet.column_dimensions['F'].width  = 22
     
-    Sheet.cell(row = 2, column = 2).value = "TCs not automated"
-    Sheet.cell(row = 2, column = 4).value = "TCs in TestStand Reports"
-    Sheet.cell(row = 2, column = 6).value = "TCs in the UAT"
+    Sheet.cell(row = 1, column = 2).value = "TCs not automated"
+    Sheet.cell(row = 1, column = 4).value = "TCs in TestStand Reports"
+    Sheet.cell(row = 1, column = 6).value = "TCs in the UAT"
+    Sheet.cell(row = 1, column = 8).value = "All TCs"
+    Sheet.cell(row = 1, column = 2).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 1, column = 4).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 1, column = 6).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 1, column = 8).alignment = Alignment(horizontal = 'center')
     
     for num in range(0, len(not_list)):
-        Sheet.cell(row = num+2, column = 2).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 2).alignment = Alignment(horizontal = 'center')
         Sheet.cell(row = num+3, column = 2).value = not_list[num]
     for num in range(0, len(xml_data)):
-        Sheet.cell(row = num+2, column = 4).alignment = Alignment(horizontal = 'center')
-        Sheet.cell(row = num+3, column = 4).value = xml_data.keys()[num]
-    for num in range(0, len(uat_data)):
-        Sheet.cell(row = num+2, column = 6).alignment = Alignment(horizontal = 'center')
-        Sheet.cell(row = num+3, column = 6).value = uat_data.keys()[num] 
-        
+        Sheet.cell(row = num+3, column = 4).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 4).value = xml_list[num]
+    for num in range(0, len_uat_list):
+        Sheet.cell(row = num+3, column = 6).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 6).value = uat_list[num]
+    '''for num in range(0, len_total_list):
+        Sheet.cell(row = num+3, column = 8).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = num+3, column = 8).value = total_list[num]'''
+    
+    
+    '''Sheet.cell(row = 3, column = 9).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 3, column = 9).value = '=IF(F3=H3,"==","XX")'''
+
+            
     #print(len(tc_list))
     #pprint.pprint(tc_list)
     
@@ -161,8 +214,19 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
 #===============================================================================
 def mergeDictsIntoOne(master_dict, new_dict):
     key_found = False
+    '''
+    pprint.pprint('master_dict')
+    pprint.pprint(master_dict)
+    pprint.pprint('new_dict')
+    pprint.pprint(new_dict)
+    '''
+    
     if len(master_dict) == 0:
         master_dict = new_dict
+    elif len(new_dict) == 0:
+        new_dict = master_dict 
+    elif (len(master_dict) == 0) and (len(new_dict) == 0):
+        print('Could not parse xml files')
     else:
         for new_key, new_value in new_dict.items():
             for master_key, master_value in master_dict.items():
@@ -181,13 +245,18 @@ def mergeDictsIntoOne(master_dict, new_dict):
                             master_value = new_value
                             key_found = True
                             break
- 
+                
             if (key_found == False):
+                #print('key not found : ' + new_key + new_value)
                 master_dict.setdefault(new_key, new_value)
             elif(key_found == True):
                 master_dict[master_key] = master_value
-                    
-    #print(len(master_dict))                    
+                key_found = False # Re-init it to False
+    '''                
+    print('Dicts merged')
+    print(len(master_dict))
+    pprint.pprint(master_dict) 
+    '''                   
     return master_dict                
    
                 
@@ -225,15 +294,35 @@ def DictFromXMLfile(file_path):
     
     tc_flag = False  ## Found a TC Name
     status_flag = False  ## Found a Status Value
+    cfse_flag = False
     store_tc = 'NA'
     store_result = 'NA'
     result = 'NA'
     tc = 'NA'
+    del_tc = []
     result_list = []
     tc_list = []
     report = {}
     
     for i in root.iter('Prop'):
+        
+        if i.attrib.get('TypeName', '0') == 'NI_CriticalFailureStackEntry':
+            #print('NI_CriticalFailureStackEntry')
+            cfse_flag = True
+        
+        if i.attrib.get('Name', '0') == 'BatchSerialNumber':
+            cfse_flag = False
+        
+        if cfse_flag == True and i.attrib.get('Name', '0') == 'StepName':
+            #print('CFSE_StepName')
+            tc = i.find('Value')
+            tc = str(tc.text)
+            if tc.startswith('TC'):
+                del_tc.append(tc)
+                cfse_flag = False
+                #print('del_tc : ' + del_tc[0])
+         
+                
         if i.attrib.get('Name', '0') == 'StepName':
             tc = i.find('Value')
             tc = str(tc.text)
@@ -252,18 +341,30 @@ def DictFromXMLfile(file_path):
         if ((tc_flag == True) and (status_flag == True)):
             tc_flag = False
             status_flag = False
+            #print(store_tc)
+            #print(store_result)
             tc_list.append(store_tc)
             result_list.append(store_result)
         
+    
+    
+    # Delete the TC found in NI_CriticalFailureStackEntry
+    if len(del_tc) !=0:
+        for i in range(0, len(del_tc)):
+            for j in range(0, len(tc_list)-1):
+                if(tc_list[j] == del_tc[i]):
+                    result_list[j] = 'Failed'       
+    
+    
     '''
     print (len(tc_list))
     print(len(result_list))
     pprint.pprint(tc_list)
     pprint.pprint(result_list)
-    
     '''
+            
     for i in range(0, len(tc_list)):
         report.setdefault(tc_list[i], result_list[i])
         
-    # pprint.pprint(report)
+    #pprint.pprint(report)
     return report

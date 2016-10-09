@@ -3,6 +3,7 @@ Created on Sep 17, 2016
 
 @author: Hankock
 '''
+import os
 import sys
 import glob
 import pprint
@@ -11,10 +12,13 @@ import xmlMethods
 import uatMethods
 import Project_consts
 
-if (len(sys.argv) == 2):    
+#if (len(sys.argv) == 2):    
     
-    pwd = str(sys.argv[1])
-    print('Current Folder : ' + pwd)
+    #pwd = str(sys.argv[1])
+pwd = os.getcwd()
+
+if (len(pwd)!=0):    
+    
     
     xml_files = []
     xlsx_files = [] 
@@ -34,10 +38,10 @@ if (len(sys.argv) == 2):
             
     
         
-    # File Path of Report summary generated after parsing TS Reports and UAT
+    # File Path of the generated file after parsing TS Reports and UAT
     ReportFilePath = pwd + Project_consts.Report_File_Name
     
-    ## Parse source UAT for all Test Cases
+    ## Parse source UAT to get all Test Cases
     wb_r = openpyxl.load_workbook(Source_UAT)
     uat_data = uatMethods.TestCasesInWorkbook(wb_r)
     #pprint.pprint(uat_data)
@@ -65,3 +69,5 @@ if (len(sys.argv) == 2):
     xmlMethods.CreateTestsNotPerformed(wb_w,Project_consts.Sheet_name_3,uat_data, xml_data,ReportFilePath)
 else:
     print('Invalid Inputs, Check Inputs and try again !!')
+    print('UAT should be in .xlsx format only!!')
+    print('Folder Path Name should be less than 100 characters, try placing the folder on Desktop')

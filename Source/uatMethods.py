@@ -122,7 +122,7 @@ def TestCasesInWorkbook(Workbook):
     Sheet_data = {}
     Data_TCs = {}
     
-    for i in range(2, Num_of_sheets-1):#Skip the last sheet - Revision History
+    for i in range(1, Num_of_sheets-1):#Skip the last sheet - Revision History
         #pprint.pprint(List_of_sheets[i])
         Sheet_data = TestCasesInSheet(Workbook, List_of_sheets[i])
         #print(str(List_of_sheets[i]) + ' ' + str(len(Sheet_data)))
