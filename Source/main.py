@@ -7,16 +7,24 @@ import os
 import sys
 import glob
 import pprint
+import win32api
 import openpyxl
 import xmlMethods
 import uatMethods
 import Project_consts
+import warnings
+import time
+
+warnings.filterwarnings("ignore")
 
 #if (len(sys.argv) == 2):    
     
-    #pwd = str(sys.argv[1])
+#    pwd = win32api.GetShortPathName(str(sys.argv[1]))
+    
+print('Please Wait...')    
 pwd = os.getcwd()
-
+print('Current Directory : ' + pwd)
+pwd = win32api.GetShortPathName(pwd)
 if (len(pwd)!=0):    
     
     
@@ -67,6 +75,8 @@ if (len(pwd)!=0):
     xmlMethods.CreateReportSheet(wb_r, wb_w, Project_consts.Sheet_name_2, xml_data,ReportFilePath)
     xmlMethods.CreateSummarySheet(wb_w, Project_consts.Sheet_name_1, uat_data, xml_data,ReportFilePath)
     xmlMethods.CreateTestsNotPerformed(wb_w,Project_consts.Sheet_name_3,uat_data, xml_data,ReportFilePath)
+    print('Report Generated.')
+    time.sleep(1)
 else:
     print('Invalid Inputs, Check Inputs and try again !!')
     print('UAT should be in .xlsx format only!!')

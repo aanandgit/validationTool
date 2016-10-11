@@ -177,11 +177,11 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
     Sheet.cell(row = 1, column = 2).value = "TCs not automated"
     Sheet.cell(row = 1, column = 4).value = "TCs in TestStand Reports"
     Sheet.cell(row = 1, column = 6).value = "TCs in the UAT"
-    Sheet.cell(row = 1, column = 8).value = "All TCs"
+    #Sheet.cell(row = 1, column = 8).value = "All TCs"
     Sheet.cell(row = 1, column = 2).alignment = Alignment(horizontal = 'center')
     Sheet.cell(row = 1, column = 4).alignment = Alignment(horizontal = 'center')
     Sheet.cell(row = 1, column = 6).alignment = Alignment(horizontal = 'center')
-    Sheet.cell(row = 1, column = 8).alignment = Alignment(horizontal = 'center')
+    #Sheet.cell(row = 1, column = 8).alignment = Alignment(horizontal = 'center')
     
     for num in range(0, len(not_list)):
         Sheet.cell(row = num+3, column = 2).alignment = Alignment(horizontal = 'center')
