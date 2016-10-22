@@ -179,8 +179,13 @@ def GetDataIndex(Workbook, Sheet, data):
             column_value = Sheet.cell(row=i, column=j).value
             # column_value and data should have same case ..???
             # print(column_value)
-            if (str(column_value) == str(data)):  # does it need to be in str..???
-                
+            t1 = str(column_value).lower()
+            t2 = str(data).lower()
+            t1 = "".join(t1.split())
+            t2 = "".join(t2.split())
+            # convert all to lower case and remove whitespaces before comparing
+            if ( t1 == t2 ):  # does it need to be in str..???
+                #print('t1 : ' + t1 + ' | t2 : ' +t2)
                 break
         break   
     Index.setdefault(i, j)  # should be integer value only

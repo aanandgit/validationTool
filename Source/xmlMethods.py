@@ -63,18 +63,25 @@ def CreateSummarySheet(wb_w, Sheet_name, uat_data, xml_data,ReportFilePath):
     if nNoOfTCsFailed != 0:
         Summary_sheet.cell(row = xr+1, column = xc).fill = PatternFill(patternType='solid',
                                         fill_type='solid', 
-                                        fgColor=Color('FF0000'))
+                                        fgColor=Color('FF0000'))#red
         Summary_sheet.cell(row = xr+1, column = xc+1).fill = PatternFill(patternType='solid',
                                         fill_type='solid', 
-                                        fgColor=Color('FF0000'))
+                                        fgColor=Color('FF0000'))#red
         
     if nNoOfTCsSkiped != 0:
         Summary_sheet.cell(row = xr+2, column = xc).fill = PatternFill(patternType='solid',
                                         fill_type='solid', 
-                                        fgColor=Color('FFFF00'))
+                                        fgColor=Color('FFFF00'))#yellow
         Summary_sheet.cell(row = xr+2, column = xc+1).fill = PatternFill(patternType='solid',
                                         fill_type='solid', 
-                                        fgColor=Color('FFFF00'))
+                                        fgColor=Color('FFFF00'))#yellow
+    if nNoOfTCsPassed == nTotalNoOfTcs:
+        Summary_sheet.cell(row = xr+0, column = xc).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('32CD32'))#green
+        Summary_sheet.cell(row = xr+0, column = xc+1).fill = PatternFill(patternType='solid',
+                                        fill_type='solid', 
+                                        fgColor=Color('32CD32'))#green
     
     uatMethods.setColumnWidth(Summary_sheet)
     wb_w.save(ReportFilePath)
@@ -99,10 +106,12 @@ def CreateReportSheet(wb_r, wb_w, Sheet_name, data, ReportFilePath):
     for i,j in sorted(data.items()): 
         tc_name = str(i)
         sh_name_key, middle, last = tc_name.partition('_')
-        sh_name_value = names[sh_name_key]
-        
-        #print(sh_name_key + ' ' +  names[sh_name_key])
-                        
+        try : 
+            sh_name_value = names[sh_name_key]
+        except:
+            print(' Invalid TC name found XML reports : ' + tc_name)
+          
+       
         curr_sheet_no = int(tc_name[2:5])   
         if (curr_sheet_no != prev_sheet_no):
             c +=3
@@ -145,7 +154,7 @@ def CreateReportSheet(wb_r, wb_w, Sheet_name, data, ReportFilePath):
 # test cases from the TestStand Report files
 #=======================================================================
 
-def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath):
+def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, coverage_data, ReportFilePath):
     
     Sheet = wb_w.get_sheet_by_name(Sheet_name)
     
@@ -164,10 +173,10 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
                 break
 
     not_list = sorted(not_list)
-    '''
-    total_list = xml_list + not_list
-    len_total_list = len(total_list)
-    '''
+    
+    len_coverage_list = len(coverage_data)
+    list_coverage_data = sorted(coverage_data.keys())
+    
     Sheet.freeze_panes = 'A2'        
 
     Sheet.column_dimensions['B'].width  = 22                  
@@ -177,11 +186,12 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
     Sheet.cell(row = 1, column = 2).value = "TCs not automated"
     Sheet.cell(row = 1, column = 4).value = "TCs in TestStand Reports"
     Sheet.cell(row = 1, column = 6).value = "TCs in the UAT"
-    #Sheet.cell(row = 1, column = 8).value = "All TCs"
+    Sheet.cell(row = 1, column = 8).value = "TestCoverage Sheet"
+    
     Sheet.cell(row = 1, column = 2).alignment = Alignment(horizontal = 'center')
     Sheet.cell(row = 1, column = 4).alignment = Alignment(horizontal = 'center')
     Sheet.cell(row = 1, column = 6).alignment = Alignment(horizontal = 'center')
-    #Sheet.cell(row = 1, column = 8).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 1, column = 8).alignment = Alignment(horizontal = 'center')
     
     for num in range(0, len(not_list)):
         Sheet.cell(row = num+3, column = 2).alignment = Alignment(horizontal = 'center')
@@ -192,13 +202,18 @@ def CreateTestsNotPerformed(wb_w, Sheet_name, uat_data, xml_data, ReportFilePath
     for num in range(0, len_uat_list):
         Sheet.cell(row = num+3, column = 6).alignment = Alignment(horizontal = 'center')
         Sheet.cell(row = num+3, column = 6).value = uat_list[num]
-    '''for num in range(0, len_total_list):
-        Sheet.cell(row = num+3, column = 8).alignment = Alignment(horizontal = 'center')
-        Sheet.cell(row = num+3, column = 8).value = total_list[num]'''
-    
-    
-    '''Sheet.cell(row = 3, column = 9).alignment = Alignment(horizontal = 'center')
-    Sheet.cell(row = 3, column = 9).value = '=IF(F3=H3,"==","XX")'''
+    if (len_coverage_list != 0):
+        for num in range(0, len_coverage_list):
+            Sheet.cell(row = num+3, column = 8).alignment = Alignment(horizontal = 'center')
+            Sheet.cell(row = num+3, column = 8).value = list_coverage_data[num]
+    else:
+        Sheet.cell(row = 3, column = 8).alignment = Alignment(horizontal = 'center')
+        Sheet.cell(row = 3, column = 8).value = 'Test Coverage Sheet not found'    
+    '''
+    # Formula
+    Sheet.cell(row = 3, column = 9).alignment = Alignment(horizontal = 'center')
+    Sheet.cell(row = 3, column = 9).value = '=IF(F3=H3,"==","XX")
+    '''
 
             
     #print(len(tc_list))
