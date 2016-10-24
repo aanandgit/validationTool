@@ -92,8 +92,8 @@ if (len(pwd)!=0):
     
     # Generate Sheets of the Report File
     xmlMethods.CreateReportSheet(wb_r, wb_w, Project_consts.Sheet_name_2, xml_data,ReportFilePath)
-    xmlMethods.CreateSummarySheet(wb_w, Project_consts.Sheet_name_1, uat_data, xml_data,ReportFilePath)
-    xmlMethods.CreateTestsNotPerformed(wb_w,Project_consts.Sheet_name_3,uat_data, xml_data,coverage_data ,ReportFilePath)
+#    xmlMethods.CreateSummarySheet(wb_w, Project_consts.Sheet_name_1, uat_data, xml_data,ReportFilePath)
+#    xmlMethods.CreateTestsNotPerformed(wb_w,Project_consts.Sheet_name_3,uat_data, xml_data,coverage_data ,ReportFilePath)
     print('Report Generated.')
     time.sleep(1)
 else:

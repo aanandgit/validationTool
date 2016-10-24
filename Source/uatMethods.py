@@ -76,13 +76,14 @@ def SheetNamesbyTCnames(Workbook):
     Num_of_sheets  = len(List_of_Sheets)
     #print(List_of_Sheets)
     #print(Num_of_sheets)
-    Sheet_data = {}
-    Workbook_data = {}
+    Sheet_data = {} #{Sheet Name : [All TestCases in the sheet]}
+    Workbook_data = [] #Shouldn't it be a list ?
     
+    # Do not iterate over UAT Guide and Revision History
     for i in range(1, Num_of_sheets):
         Sheet_data = SheetNameofTC(Workbook, List_of_Sheets[i])
         #Workbook_data.setdefault(Sheet_data.keys()[0], Sheet_data.values()[0])
-        Workbook_data.update(Sheet_data)
+        Workbook_data.append(Sheet_data)
         #print(str(Sheet_data.keys()) + ' ' + str(Sheet_data.values()))
     
     #pprint.pprint(Workbook_data)    
@@ -93,22 +94,28 @@ def SheetNameofTC(Workbook, Sheet):
     column_num = Index.values()[0]
     Sheet_data = {}
     s_name = []
-    flag = True
+    #flag = True
     
     Sheet_obj = Workbook.get_sheet_by_name(Sheet)    
     for i in range(1, (Sheet_obj.max_row+1)):
         row_value = str(Sheet_obj.cell(row=i, column=column_num).value)
         if (row_value.startswith('TC') == True):
-            first, middle, last = row_value.partition('_')   
-            s_name.append(first)
+            #first, _, _ = row_value.partition('_')   
+            #s_name.append(first)
+            # Should not strip the other half of the TestCase Name
+            s_name.append(row_value)
   
+    # Create a dict of type {Sheet Name : [All TCs in the sheet]}
+    if len(s_name) != 0:
+        Sheet_data.setdefault(Sheet, s_name)
+    
       
-    for i in range(0, len(s_name)):
+    '''for i in range(0, len(s_name)):
         if (s_name[0] != s_name[i]):
             flag = False
     
     if flag != False and len(s_name) != 0:
-        Sheet_data.setdefault(s_name[0],Sheet)    
+        Sheet_data.setdefault(s_name[0],Sheet)    '''
         
   
     return Sheet_data
